@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Room</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+
+    <style>
+      
+body {
+    background: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: Arial, sans-serif;
+}
+
+
+.chat-container {
+    display: flex;
+    background: white;
+    width: 90%;
+    max-width: 900px;
+    height: 500px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+
+.sidebar {
+    background: #2c3e50;
+    color: white;
+    width: 250px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.sidebar h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.sidebar p {
+    font-size: 1rem;
+    margin-bottom: 10px;
+}
+
+.sidebar ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.sidebar ul li {
+    padding: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.sidebar button {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+#leaveRoom {
+    background-color: #f1c40f;
+    color: black;
+}
+
+#logoutBtn {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.sidebar button:hover {
+    opacity: 0.8;
+}
+
+
+.chat-box {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+
+#chatWindow {
+    height: 80%;
+    padding: 15px;
+    overflow-y: auto;
+    background: #ecf0f1;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    flex-direction: column;
+}
+
+
+.message {
+    background: white;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    width: fit-content;
+    max-width: 80%;
+    word-wrap: break-word;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.message.sent {
+    background: #3498db;
+    color: white;
+    align-self: flex-end;
+}
+
+.message.received {
+    background: #ffffff;
+    color: black;
+    align-self: flex-start;
+}
+
+
+.input-box {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background: white;
+    border-top: 1px solid #ddd;
+}
+
+.input-box input {
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.input-box button {
+    margin-left: 10px;
+    padding: 10px 15px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.input-box button:hover {
+    background: #2980b9;
+}
+
+
+#typingIndicator {
+    font-size: 0.9rem;
+    color: #888;
+    margin-top: -10px;
+}
+
+@media screen and (max-width: 768px) {
+    .chat-container {
+        flex-direction: column;
+        height: 100vh;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        text-align: center;
+        padding: 15px;
+    }
+
+    .sidebar button {
+        font-size: 0.9rem;
+        padding: 8px;
+    }
+
+    #chatWindow {
+        height: 70%;
+    }
+
+    .input-box {
+        flex-direction: column;
+    }
+
+    .input-box input {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+
+    .input-box button {
+        width: 100%;
+    }
+}
+
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <!-- Sidebar -->
+                
+        <div class="sidebar">
+            <h3>Chat App</h3>
+            <p><strong>Room:</strong> <span id="roomName">None</span></p>
+
+            <h5>Online Members</h5>
+            <ul id="userList"></ul>
+
+            <h5>All Registered Members</h5>
+            <ul id="allMembers"></ul>
+            <h5>Manage Members</h5>
+            <input type="text" id="memberUsername" class="form-control mb-2" placeholder="Enter username">
+            <button id="addMember" class="btn btn-success w-100 mb-2">Add Member</button>
+            <button id="removeMember" class="btn btn-danger w-100">Remove Member</button>
+
+
+            <button id="leaveRoom" class="btn btn-warning w-100 mt-3">Leave Room</button>
+            <button id="logoutBtn" class="btn btn-danger w-100 mt-3">Logout</button>
+        </div>
+
+
+        <!-- Chat Area -->
+        <div class="chat-box">
+            <div id="chatWindow"></div>
+            <div class="input-box">
+                <input type="text" id="messageInput" class="form-control" placeholder="Type a message...">
+                <button id="sendMessage" class="btn btn-primary">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/chat.js"></script>
+</body>
+</html>
