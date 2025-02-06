@@ -10,6 +10,7 @@ const authRoutes = require("./routes/auth");
 const chatRoutes = require("./routes/chat");
 const GroupMessage = require("./models/GroupMessage");
 const User = require("./models/User");
+const connectDB = require('./config/db')
 
 dotenv.config();
 const app = express();
@@ -17,11 +18,7 @@ const server = http.createServer(app);
 const io = socketIo(server, { cors: { origin: "*" } });
 
 
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-}).then(() => console.log(" MongoDB Connected"))
-  .catch(err => console.error("❌ MongoDB Connection Error:", err));
+connectDB()
 
 app.use(express.json());
 app.use(cors());
